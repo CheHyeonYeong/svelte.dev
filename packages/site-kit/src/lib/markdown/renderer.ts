@@ -32,6 +32,7 @@ import {
 	escape_html,
 	TWINKLEPLOP_LANGUAGE_MAP,
 	slugify,
+	split_heading,
 	smart_quotes,
 	transform
 } from './utils.ts';
@@ -626,10 +627,10 @@ export async function render_content_markdown(
 			return text;
 		},
 		heading({ tokens, depth }) {
-			const text = this.parser!.parseInline(tokens);
+			const { title: text, id } = split_heading(this.parser!.parseInline(tokens));
 			const html = text.replace(/<\/?code>/g, '');
 
-			headings[depth - 1] = slugify(text);
+			headings[depth - 1] = slugify(id);
 			headings.length = depth;
 			const slug = headings.filter(Boolean).join('-');
 

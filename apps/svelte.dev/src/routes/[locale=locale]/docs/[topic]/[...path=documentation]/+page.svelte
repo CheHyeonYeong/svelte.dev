@@ -1,11 +1,11 @@
 <script lang="ts">
 	// reuse the English docs page, only the data is localized
 	import DocsPage from '../../../../docs/[topic]/[...path=documentation]/+page.svelte';
-	import { ui } from '#lib/i18n.ts';
+	import { get_ui } from '#lib/i18n.ts';
 
 	let { data } = $props();
 
-	const t = $derived(ui[data.locale]);
+	const t = get_ui();
 </script>
 
 <aside class="translation-notice" lang={t.lang}>

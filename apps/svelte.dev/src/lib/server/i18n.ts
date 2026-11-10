@@ -1,8 +1,9 @@
 import { read } from '$app/server';
-import type { Document, DocumentSummary } from '@sveltejs/site-kit';
+import type { Document, DocumentSummary, NavigationLink } from '@sveltejs/site-kit';
 import { create_index } from '@sveltejs/site-kit/server/content';
 import { docs, index } from './content.ts';
-import { locales, type Locale } from '#lib/i18n.ts';
+import { nav_links } from './nav.ts';
+import { locales, ui, type Locale } from '#lib/i18n.ts';
 
 /**
  * Translated docs live in `apps/svelte.dev/translations/<locale>/docs/...` and mirror
@@ -41,6 +42,41 @@ for (const [slug, document] of Object.entries(translated)) {
 /** Same slug derivation as `create_index`, applied to a file path like `docs/svelte/01-introduction/01-overview.md` */
 function slug_of(file: string) {
 	return file.replace(/(^|\/)[\d-]+-/g, '$1').replace(/(\/index)?\.md$/, '');
+}
+
+function section_ids(document: Document) {
+	return document.sections.flatMap((section) => [
+		section.slug,
+		...section.subsections.map((subsection) => subsection.slug)
+	]);
+}
+
+// Translated headings must keep the ids of the English headings, otherwise links like
+// `/docs/svelte/getting-started#Editor-tooling` break. Fail loudly with a helpful message.
+for (const locale of locales) {
+	for (const [slug, translation] of Object.entries(translations[locale])) {
+		const original = index[slug];
+
+		if (!original) {
+			throw new Error(
+				`translations/${translation.file} has no English original (expected content/${slug}.md or similar)`
+			);
+		}
+
+		const expected = section_ids(original);
+		const actual = section_ids(translation);
+		const missing = expected.filter((id) => !actual.includes(id));
+		const extra = actual.filter((id) => !expected.includes(id));
+
+		if (missing.length > 0 || extra.length > 0) {
+			throw new Error(
+				`Heading ids of translations/${translation.file} do not match the English original.\n` +
+					(missing.length ? `  missing: ${missing.join(', ')}\n` : '') +
+					(extra.length ? `  unexpected: ${extra.map((id) => id || '(empty)').join(', ')}\n` : '') +
+					`Keep the original id by appending the English heading as a comment, e.g. \`## 에디터 도구 <!-- Editor tooling -->\``
+			);
+		}
+	}
 }
 
 function find(locale: Locale, document: Document) {
@@ -108,4 +144,42 @@ export function get_localized_page(locale: Locale, slug: string) {
 		/** Path of the translation file relative to `apps/svelte.dev/translations`, if it exists */
 		translation_file: translation?.file
 	};
+}
+
+/** All docs pages for the given locale with locale-prefixed slugs, for the search index */
+export function get_localized_pages(locale: Locale) {
+	return Object.keys(docs.pages).map((slug) => {
+		const { document } = get_localized_page(locale, slug)!;
+		return { ...document, slug: `${locale}/${document.slug}` };
+	});
+}
+
+/** The top navigation, with translated labels and the docs menu pointing to `/<locale>/docs/...` */
+export function get_localized_nav_links(locale: Locale): NavigationLink[] {
+	const labels = ui[locale].nav;
+
+	return nav_links.map((link) => {
+		const title = labels[link.slug as keyof typeof labels] ?? link.title;
+		if (link.slug !== 'docs') return { ...link, title };
+
+		return {
+			...link,
+			title,
+			slug: `${locale}/docs`,
+			sections: (link.sections ?? []).map((topic) => {
+				const document = docs.topics[topic.path!.slice(1)];
+				return {
+					title: topic.title,
+					path: `/${locale}${topic.path}`,
+					sections: document.children.map((section) => ({
+						title: title_of(locale, section),
+						sections: section.children.map((page) => ({
+							title: title_of(locale, page),
+							path: `/${locale}/${page.slug}`
+						}))
+					}))
+				};
+			})
+		};
+	});
 }

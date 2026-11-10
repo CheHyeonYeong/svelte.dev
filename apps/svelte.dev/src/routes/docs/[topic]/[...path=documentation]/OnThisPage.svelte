@@ -1,6 +1,9 @@
 <script lang="ts">
 	import { afterNavigate } from '$app/navigation';
 	import type { Document } from '@sveltejs/site-kit';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui();
 
 	let { content, document }: { content: HTMLElement; document: Document } = $props();
 
@@ -45,7 +48,7 @@
 <aside class="on-this-page">
 	<label>
 		<input type="checkbox" aria-label="Toggle 'on this page' menu" />
-		<h3>On this page</h3>
+		<h3>{t.on_this_page}</h3>
 	</label>
 
 	<nav>

@@ -1,4 +1,10 @@
-import { extract_frontmatter, is_in_code_block, slugify, smart_quotes } from '../../markdown/utils';
+import {
+	extract_frontmatter,
+	is_in_code_block,
+	slugify,
+	smart_quotes,
+	split_heading
+} from '../../markdown/utils';
 import type { Document, Section } from '../../types';
 
 export async function create_index(
@@ -33,13 +39,13 @@ export async function create_index(
 		let current_section: Section | undefined;
 		const sections = Array.from(body.matchAll(/^#{2,3}\s+(.*)$/gm)).reduce((arr, match) => {
 			if (is_in_code_block(body, match.index || 0)) return arr;
-			const title = match[1];
+			const { title, id } = split_heading(match[1]);
 			const displayed_title = smart_quotes(title)
 				// replace < and > inside code spans
 				.replace(/`(.+?)`/g, (_, contents) => contents.replace(/</g, '&lt;').replace(/>/g, '&gt;'))
 				// turn e.g. `class:_name_` into `class:<em>name</em>`
 				.replace(/:_(.+)_/g, (_, contents) => `:<em>${contents}</em>`);
-			const slug = slugify(title);
+			const slug = slugify(id);
 
 			if (match[0].startsWith('###') && current_section) {
 				current_section.subsections.push({

@@ -92,6 +92,18 @@ export function decode_html_entities(text: string): string {
 		});
 }
 
+/**
+ * Splits a heading like `## 번역된 제목 <!-- Original heading -->` into the text to display
+ * and the text its id is derived from. Translations use this to keep the anchors of the
+ * English original, so that links like `#Original-heading` keep working.
+ * Headings without such a trailing comment are returned unchanged.
+ */
+export function split_heading(text: string): { title: string; id: string } {
+	const match = /\s*<!--\s*(.+?)\s*-->\s*$/.exec(text);
+	if (!match) return { title: text, id: text };
+	return { title: text.slice(0, match.index), id: match[1] };
+}
+
 export const slugify = (str: string) => {
 	return (
 		decode_html_entities(clean(str).replace(/(’|&rsquo;)/g, "'"))
