@@ -1,4 +1,5 @@
 import { redirect } from '@sveltejs/kit';
+import { get_locale, ui } from '#lib/i18n.ts';
 
 const mappings = new Map([
 	// kit docs (kit.svelte.dev/docs/X → svelte.dev/docs/kit/X)
@@ -106,7 +107,12 @@ export async function handle({ event, resolve }) {
 		redirect(307, event.url.pathname.replace('/tutorial/', '/tutorial/svelte/'));
 	}
 
+	const locale = get_locale(event.url.pathname);
+
 	const response = await resolve(event, {
+		transformPageChunk: locale
+			? ({ html }) => html.replace('<html lang="en"', `<html lang="${ui[locale].lang}"`)
+			: undefined,
 		preload: ({ type, path }) => {
 			if (type === 'font') {
 				if (!path.endsWith('.woff2')) return false;

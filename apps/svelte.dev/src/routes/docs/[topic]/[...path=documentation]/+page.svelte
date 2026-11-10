@@ -11,14 +11,23 @@
 	import { page } from '$app/state';
 	import { get_topic_title } from '#lib/topics.ts';
 	import RelatedLinks from '#lib/components/RelatedLinks.svelte';
+	import type { PageData } from './$types';
 
-	let { data } = $props();
+	let {
+		data,
+		edit
+	}: {
+		data: PageData;
+		/** Overrides the "Edit this page" link, used by translated pages (`/[locale]/docs/...`) */
+		edit?: { url: string; label: string };
+	} = $props();
 
 	setupDocsHovers();
 
 	let content = $state() as HTMLElement;
 
 	const repo = $derived.by(() => {
+		if (edit) return edit.url;
 		const name = data.document.slug.split('/')[1];
 		const link = 'docs/' + data.document.file.split('/').slice(2).join('/');
 		return `https://github.com/sveltejs/${name}/edit/main/documentation/${link}`;
@@ -101,8 +110,9 @@
 	</div>
 
 	<PageControls
-		llms
+		llms={!edit}
 		{repo}
+		edit_label={edit?.label}
 		prev={data.document.prev && {
 			title: data.document.prev.title,
 			path: `/${data.document.prev.slug}`
