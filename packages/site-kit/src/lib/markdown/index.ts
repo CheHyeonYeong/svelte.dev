@@ -1,7 +1,7 @@
 export { render_content_markdown } from './renderer.ts';
 export type { DocumentationReferences } from './references.ts';
 
-export { transform, slugify, clean, strip_origin } from './utils.ts';
+export { transform, slugify, split_heading, clean, strip_origin } from './utils.ts';
 
 // TODO none of these really belong here
 export type Modules = Array<{

@@ -8,6 +8,8 @@
 	import { injectSpeedInsights } from '@vercel/speed-insights/sveltekit-next';
 	import { inject } from '@vercel/analytics';
 	import { beforeNavigate } from '$app/navigation';
+	import { get_locale, ui } from '#lib/i18n.ts';
+	import LocaleSwitch from '#lib/components/LocaleSwitch.svelte';
 
 	if (!dev) {
 		injectSpeedInsights();
@@ -31,14 +33,20 @@
 
 	let { data, children: layout_children } = $props();
 
-	const sections: Record<string, string> = {
-		docs: 'Docs',
-		packages: 'Packages',
-		playground: 'Playground',
-		blog: 'Blog',
-		tutorial: 'Tutorial',
-		search: 'Search'
-	};
+	const locale = $derived(get_locale(page.url.pathname));
+	const t = $derived(ui[locale ?? 'en']);
+
+	// title of the current section, shown in the mobile nav
+	const section = $derived(page.url.pathname.split('/')[locale ? 2 : 1]);
+	const title = $derived(t.nav[section as keyof typeof t.nav] ?? '');
+
+	// `/[locale]/...` layouts override the English nav links
+	const nav_links = $derived(page.data.nav_links ?? data.nav_links);
+
+	// the server sets `<html lang>` for the initial page (see hooks.server.js), keep it in sync on client-side navigation
+	$effect(() => {
+		document.documentElement.lang = t.lang;
+	});
 </script>
 
 <svelte:head>
@@ -51,7 +59,11 @@
 
 <Shell nav_visible={page.route.id !== '/(authed)/playground/[...id]/embed'}>
 	{#snippet top_nav()}
-		<Nav title={sections[page.url.pathname.split('/')[1]!] ?? ''} links={data.nav_links} />
+		<Nav {title} links={nav_links} search_label={t.search_placeholder}>
+			{#snippet menu()}
+				<LocaleSwitch />
+			{/snippet}
+		</Nav>
 	{/snippet}
 
 	{#snippet children()}
@@ -66,5 +78,11 @@
 </Shell>
 
 {#if browser}
-	<SearchBox />
+	<!-- each locale has its own search index, so recreate the search box when it changes -->
+	{#key locale}
+		<SearchBox
+			index={locale ? `/${locale}/content.json` : '/content.json'}
+			placeholder={t.search_placeholder}
+		/>
+	{/key}
 {/if}

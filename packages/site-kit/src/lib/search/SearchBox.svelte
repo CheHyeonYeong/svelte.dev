@@ -13,13 +13,21 @@ It appears when the user clicks on the `Search` component or presses the corresp
 	import { page } from '$app/state';
 
 	interface Props {
+		/** URL of the JSON file with the search blocks */
+		index?: string;
 		placeholder?: string;
 		idle?: Snippet<[number]>;
 		search_description?: Snippet;
 		no_results?: Snippet;
 	}
 
-	let { placeholder = 'Search', idle, search_description, no_results }: Props = $props();
+	let {
+		index = '/content.json',
+		placeholder = 'Search',
+		idle,
+		search_description,
+		no_results
+	}: Props = $props();
 
 	let modal = $state() as HTMLElement;
 
@@ -35,7 +43,7 @@ It appears when the user clicks on the `Search` component or presses the corresp
 	let uid = 1;
 	const pending = new Set();
 
-	onMount(async () => {
+	onMount(() => {
 		worker = new Worker(new URL('./search-worker', import.meta.url), {
 			type: 'module'
 		});
@@ -59,9 +67,12 @@ It appears when the user clicks on the `Search` component or presses the corresp
 		worker.postMessage({
 			type: 'init',
 			payload: {
-				origin: location.origin
+				origin: location.origin,
+				index
 			}
 		});
+
+		return () => worker.terminate();
 	});
 
 	afterNavigate(() => {

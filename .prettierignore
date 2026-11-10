@@ -7,3 +7,4 @@ pnpm-lock.yaml
 _generated.md
 land-110m.json
 /apps/svelte.dev/content/docs
+/apps/svelte.dev/translations/*/docs

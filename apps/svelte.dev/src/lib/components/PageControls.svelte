@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { Icon } from '@sveltejs/site-kit/components';
+	import { get_ui } from '#lib/i18n.ts';
 
 	interface Props {
 		repo: string;
@@ -16,7 +17,9 @@
 		};
 	}
 
-	let { repo, edit_label = 'Edit this page on GitHub', prev, next, llms }: Props = $props();
+	const t = get_ui();
+
+	let { repo, edit_label = t.edit_page, prev, next, llms }: Props = $props();
 </script>
 
 <p class="edit">
@@ -33,8 +36,8 @@
 
 <div class="controls">
 	<div class="flex">
-		<span class:faded={!prev}>previous</span>
-		<span class="next" class:faded={!next}>next</span>
+		<span class:faded={!prev}>{t.previous}</span>
+		<span class="next" class:faded={!next}>{t.next}</span>
 	</div>
 
 	<div class="flex">

@@ -13,7 +13,7 @@ Top navigation bar for the application. It provides a slot for the left side, th
 	import Dropdown from '../components/Dropdown.svelte';
 	import { HoverMenu } from '../components';
 	import Search from '../search/Search.svelte';
-	import { tick } from 'svelte';
+	import { tick, type Snippet } from 'svelte';
 	import FontToggle from '../components/FontToggle.svelte';
 	import { is_active } from './utils';
 
@@ -21,9 +21,13 @@ Top navigation bar for the application. It provides a slot for the left side, th
 		home_title?: string;
 		title: string | undefined;
 		links: NavigationLink[];
+		/** Label of the search button */
+		search_label?: string;
+		/** Extra items rendered next to the font and theme toggles, e.g. a language switch */
+		menu?: Snippet;
 	}
 
-	let { home_title = 'Homepage', title, links }: Props = $props();
+	let { home_title = 'Homepage', title, links, search_label, menu }: Props = $props();
 
 	let visible = $state(true);
 
@@ -124,7 +128,7 @@ Top navigation bar for the application. It provides a slot for the left side, th
 		</div>
 
 		<div class="menu">
-			<Search />
+			<Search label={search_label} />
 
 			<div class="external-links">
 				<a href="/chat" aria-label="Discord Chat">
@@ -140,6 +144,7 @@ Top navigation bar for the application. It provides a slot for the left side, th
 				</a>
 			</div>
 
+			{@render menu?.()}
 			<FontToggle />
 
 			<ThemeToggle />
@@ -157,6 +162,7 @@ Top navigation bar for the application. It provides a slot for the left side, th
 			<Icon name="search" size={18} />
 		</button>
 
+		{@render menu?.()}
 		<FontToggle />
 
 		<ThemeToggle />
