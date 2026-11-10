@@ -5,6 +5,8 @@
 	import PageControls from '#lib/components/PageControls.svelte';
 	import RelatedLinks from '#lib/components/RelatedLinks.svelte';
 	import { session_storage } from '#lib/storage.js';
+	import { page } from '$app/state';
+	import { get_locale, get_ui } from '#lib/i18n.ts';
 
 	/** @type {import('#lib/tutorial/index.d.ts').Exercise} */
 	export let exercise;
@@ -21,6 +23,18 @@
 	const copy_enabled = `${namespace}:copy_enabled`;
 
 	let show_modal = false;
+
+	const ui = get_ui();
+	const t = ui.tutorial;
+
+	// `/tutorial` or `/<locale>/tutorial`
+	$: locale = get_locale(page.url.pathname);
+	$: base = `${locale ? `/${locale}` : ''}/tutorial`;
+
+	// translated exercises link to the translation file, untranslated ones to the translation folder
+	$: repo = locale
+		? `https://github.com/CheHyeonYeong/svelte.dev/${exercise.translation_file ? `edit/main/apps/svelte.dev/translations/${exercise.translation_file}` : `tree/main/apps/svelte.dev/translations/${locale}`}`
+		: `https://github.com/sveltejs/svelte.dev/edit/main/apps/svelte.dev/content/${exercise.dir}`;
 </script>
 
 <section bind:this={sidebar}>
@@ -70,20 +84,29 @@
 				}
 			}}
 		>
+			{#if locale && !exercise.translation_file}
+				<p class="translation-notice">{ui.untranslated}</p>
+			{/if}
+
 			<Text>
 				{@html exercise.html}
 			</Text>
 		</div>
 
 		<PageControls
-			repo="https://github.com/sveltejs/svelte.dev/edit/main/apps/svelte.dev/content/{exercise.dir}"
+			{repo}
+			edit_label={locale
+				? exercise.translation_file
+					? ui.edit_translation
+					: ui.contribute
+				: undefined}
 			prev={exercise.prev && {
 				title: exercise.prev.title,
-				path: `/tutorial/${exercise.prev.slug}`
+				path: `${base}/${exercise.prev.slug}`
 			}}
 			next={exercise.next && {
 				title: exercise.next.title,
-				path: `/tutorial/${exercise.next.slug}`
+				path: `${base}/${exercise.next.slug}`
 			}}
 		/>
 	</div>
@@ -92,12 +115,9 @@
 {#if show_modal}
 	<Modal on:close={() => (show_modal = false)}>
 		<div class="modal-contents">
-			<h2>Copy and paste is currently disabled!</h2>
+			<h2>{t.copy_disabled_title}</h2>
 
-			<p>
-				We recommend typing the code into the editor to complete the exercise, as this results in
-				better retention and understanding.
-			</p>
+			<p>{t.copy_disabled_body}</p>
 			<label>
 				<input
 					type="checkbox"
@@ -105,15 +125,24 @@
 						session_storage.set(copy_enabled, e.currentTarget.checked ? 'true' : '');
 					}}
 				/>
-				enable copy-and-paste for the duration of this session
+				{t.copy_enable}
 			</label>
 
-			<button class="raised primary" on:click={() => (show_modal = false)}>OK</button>
+			<button class="raised primary" on:click={() => (show_modal = false)}>{t.ok}</button>
 		</div>
 	</Modal>
 {/if}
 
 <style>
+	.translation-notice {
+		margin: 0 0 2rem;
+		padding: 1rem 1.4rem;
+		border-left: 3px solid var(--sk-fg-accent);
+		background: var(--sk-bg-2);
+		font: var(--sk-font-ui-medium);
+		color: var(--sk-fg-2);
+	}
+
 	section {
 		display: flex;
 		flex-direction: column;

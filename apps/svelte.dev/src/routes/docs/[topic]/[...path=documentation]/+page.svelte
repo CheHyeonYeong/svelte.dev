@@ -12,6 +12,7 @@
 	import { get_topic_title } from '#lib/topics.ts';
 	import RelatedLinks from '#lib/components/RelatedLinks.svelte';
 	import type { PageData } from './$types';
+	import { get_ui } from '#lib/i18n.ts';
 
 	let {
 		data,
@@ -21,6 +22,8 @@
 		/** Overrides the "Edit this page" link, used by translated pages (`/[locale]/docs/...`) */
 		edit?: { url: string; label: string };
 	} = $props();
+
+	const ui = get_ui();
 
 	setupDocsHovers();
 
@@ -71,9 +74,12 @@
 </script>
 
 <svelte:head>
-	<title>{data.document.metadata.title} • {topic_title} Docs</title>
+	<title>{data.document.metadata.title} • {topic_title} {ui.docs_title}</title>
 
-	<meta name="twitter:title" content="{data.document.metadata.title} • {topic_title} Docs" />
+	<meta
+		name="twitter:title"
+		content="{data.document.metadata.title} • {topic_title} {ui.docs_title}"
+	/>
 	<meta
 		name="twitter:description"
 		content="{data.document.metadata.title} • {topic_title} documentation"

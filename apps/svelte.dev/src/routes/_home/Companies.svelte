@@ -1,3 +1,9 @@
+<script>
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
+</script>
+
 <div class="companies">
 	<div class="wing">
 		<div class="logos">
@@ -8,7 +14,7 @@
 			<enhanced:img class="logo" src="./companies/apple.svg" alt="Apple logo" />
 		</div>
 	</div>
-	<h2>used by companies you’ve heard of</h2>
+	<h2>{t.companies}</h2>
 	<div class="wing">
 		<div class="logos">
 			<enhanced:img class="logo" src="./companies/spotify.svg" alt="Spotify logo" />

@@ -40,6 +40,8 @@ export interface Exercise {
 	a: Record<string, string>;
 	b: Record<string, string>;
 	has_solution: boolean;
+	/** Path of the translation file relative to `apps/svelte.dev/translations`, when shown in another language */
+	translation_file?: string;
 }
 
 export interface ExerciseStub {

@@ -7,14 +7,17 @@
 	import Video from './_home/Video.svelte';
 	import Community from './_home/Community.svelte';
 	import Footer from './_home/Footer.svelte';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
 </script>
 
 <svelte:head>
-	<title>Svelte • Web development for the rest of us</title>
+	<title>{t.head_title}</title>
 
 	<meta name="twitter:title" content="Svelte" />
-	<meta name="twitter:description" content="Web development for the rest of us" />
-	<meta name="description" content="Web development for the rest of us" />
+	<meta name="twitter:description" content={t.description} />
+	<meta name="description" content={t.description} />
 </svelte:head>
 
 <div class="home">
@@ -30,9 +33,7 @@
 		<figure>
 			<Video />
 			<figcaption>
-				<a href="https://www.offerzen.com/community/svelte-origins-documentary"
-					>Watch the full Svelte Origins documentary</a
-				>
+				<a href="https://www.offerzen.com/community/svelte-origins-documentary">{t.documentary}</a>
 			</figcaption>
 		</figure>
 	</Section>

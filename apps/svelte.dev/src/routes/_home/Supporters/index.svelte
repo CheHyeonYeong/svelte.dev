@@ -6,11 +6,13 @@
 	import contributors_img from './contributors.jpg?format=webp';
 	// @ts-expect-error
 	import donors_img from './donors.jpg?format=webp';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
 </script>
 
 <p class="intro">
-	Backed by <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a> and countless donors,
-	developed by full-time and part-time maintainers, Svelte is here to stay.
+	{@html t.supporters}
 </p>
 
 <div class="wrapper">

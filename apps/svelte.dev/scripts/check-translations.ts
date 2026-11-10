@@ -1,5 +1,5 @@
 /**
- * Checks translated docs in `translations/<locale>/docs` against their English originals in `content/docs`.
+ * Checks translations in `translations/<locale>/{docs,tutorial}` against their English originals in `content/`.
  *
  * Usage:
  *   node scripts/check-translations.ts                 # all translations
@@ -25,11 +25,15 @@ const content_dir = path.join(root, 'content');
 function walk(dir: string): string[] {
 	return fs.readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
 		const full = path.join(dir, entry.name);
-		return entry.isDirectory() ? walk(full) : entry.name.endsWith('.md') ? [full] : [];
+		// tutorial exercise files (`+assets`) are code, not translations
+		if (entry.isDirectory()) return entry.name === '+assets' ? [] : walk(full);
+		return entry.name.endsWith('.md') ? [full] : [];
 	});
 }
 
 function split_frontmatter(text: string) {
+	// some originals start with a byte order mark
+	text = text.replace(/^\uFEFF/, '');
 	const match = /^---\n([\s\S]*?)\n---\n/.exec(text);
 	if (!match) return { frontmatter: new Map<string, string>(), body: text };
 
@@ -197,13 +201,12 @@ function check(file: string) {
 
 const files = process.argv.slice(2).length
 	? process.argv.slice(2).map((file) => path.resolve(file))
-	: fs
-			.readdirSync(translations_dir)
-			.flatMap((locale) =>
-				fs.existsSync(path.join(translations_dir, locale, 'docs'))
-					? walk(path.join(translations_dir, locale, 'docs'))
-					: []
-			);
+	: fs.readdirSync(translations_dir).flatMap((locale) =>
+			['docs', 'tutorial']
+				.map((section) => path.join(translations_dir, locale, section))
+				.filter((dir) => fs.existsSync(dir))
+				.flatMap(walk)
+		);
 
 let failed = 0;
 

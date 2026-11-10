@@ -1,12 +1,8 @@
 import { getContext, setContext } from 'svelte';
+import { locales, type Locale } from './locales.ts';
 
-/**
- * Locales that have (partial) translations of the docs in `apps/svelte.dev/translations/<locale>`.
- * This module is shared between client and server, so it must not import server-only code.
- */
-export const locales = ['ko'] as const;
-
-export type Locale = (typeof locales)[number];
+// This module is shared between client and server, so it must not import server-only code.
+export { locales, type Locale };
 
 export function is_locale(value: string): value is Locale {
 	return (locales as readonly string[]).includes(value);
@@ -32,6 +28,10 @@ export interface UI {
 	nav: Record<'docs' | 'playground' | 'tutorial' | 'packages' | 'blog' | 'search', string>;
 	search_placeholder: string;
 	on_this_page: string;
+	/** Suffix of docs page titles, e.g. "Svelte Docs" */
+	docs_title: string;
+	/** Suffix of tutorial page titles */
+	tutorial_title: string;
 	previous: string;
 	next: string;
 	edit_page: string;
@@ -46,6 +46,45 @@ export interface UI {
 		/** HTML */
 		intro: string;
 		options: Array<{ href: string; title: string; description: string; external?: boolean }>;
+	};
+	/** The home page. Values marked HTML may contain links */
+	home: {
+		head_title: string;
+		description: string;
+		hero_title: string;
+		get_started: string;
+		docs_href: string;
+		hero_alt: string;
+		pronunciation_alt: string;
+		definition: string;
+		/** HTML */
+		blurb: string;
+		blurb_2: string;
+		companies: string;
+		documentary: string;
+		community_title: string;
+		/** HTML */
+		community: string;
+		photos_alt: string;
+		/** HTML */
+		photos_by: string;
+		/** HTML */
+		supporters: string;
+		/** HTML, after "© <year> Svelte contributors." */
+		footer: string;
+	};
+	/** The tutorial (`/tutorial`) */
+	tutorial: {
+		menu: string;
+		reset: string;
+		solve: string;
+		previous_exercise: string;
+		next_exercise: string;
+		toggle_vim: string;
+		copy_disabled_title: string;
+		copy_disabled_body: string;
+		copy_enable: string;
+		ok: string;
 	};
 }
 
@@ -63,6 +102,8 @@ export const ui: Record<'en' | Locale, UI> = {
 		},
 		search_placeholder: 'Search',
 		on_this_page: 'On this page',
+		docs_title: 'Docs',
+		tutorial_title: 'Svelte Tutorial',
 		previous: 'previous',
 		next: 'next',
 		edit_page: 'Edit this page on GitHub',
@@ -114,6 +155,44 @@ export const ui: Record<'en' | Locale, UI> = {
 					external: true
 				}
 			]
+		},
+		home: {
+			head_title: 'Svelte • Web development for the rest of us',
+			description: 'Web development for the rest of us',
+			hero_title: 'web development for the rest of us',
+			get_started: 'get started',
+			docs_href: '/docs',
+			hero_alt: 'The Svelte compiler packaging up your component code',
+			pronunciation_alt: 'Svelte pronunciation guide',
+			definition: 'attractively thin, graceful and stylish',
+			blurb:
+				'Svelte is a UI framework that uses a compiler to let you write breathtakingly concise components that do minimal work in the browser, using languages you already know — HTML, CSS and JavaScript. <strong>It’s a love letter to web development.</strong>',
+			blurb_2:
+				'But don’t take our word for it. Developers consistently rank Svelte as the framework they’re most excited about using.',
+			companies: 'used by companies you’ve heard of',
+			documentary: 'Watch the full Svelte Origins documentary',
+			community_title: 'join our friendly community',
+			community:
+				'Our sister organisation, <a href="https://www.sveltesociety.dev/">Svelte Society</a>, organises events around the globe. Find your chapter and join us in <a href="/chat">our Discord server</a>.',
+			photos_alt: 'Photos by Marcel Cutts from the 2022 Svelte Summit in Stockholm',
+			photos_by: 'Photos by <a href="https://marcel.gg/">Marcel Cutts</a>',
+			supporters:
+				'Backed by <a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a> and countless donors, developed by full-time and part-time maintainers, Svelte is here to stay.',
+			footer:
+				'Svelte is <a href="https://github.com/sveltejs/svelte">free and open source software</a> released under the MIT license.'
+		},
+		tutorial: {
+			menu: 'Menu',
+			reset: 'reset',
+			solve: 'solve',
+			previous_exercise: 'Previous exercise',
+			next_exercise: 'Next exercise',
+			toggle_vim: 'Toggle Vim mode',
+			copy_disabled_title: 'Copy and paste is currently disabled!',
+			copy_disabled_body:
+				'We recommend typing the code into the editor to complete the exercise, as this results in better retention and understanding.',
+			copy_enable: 'enable copy-and-paste for the duration of this session',
+			ok: 'OK'
 		}
 	},
 	ko: {
@@ -129,6 +208,8 @@ export const ui: Record<'en' | Locale, UI> = {
 		},
 		search_placeholder: '검색',
 		on_this_page: '이 페이지의 내용',
+		docs_title: '문서',
+		tutorial_title: 'Svelte 튜토리얼',
 		previous: '이전',
 		next: '다음',
 		edit_page: 'GitHub에서 이 페이지 수정하기',
@@ -180,6 +261,44 @@ export const ui: Record<'en' | Locale, UI> = {
 					external: true
 				}
 			]
+		},
+		home: {
+			head_title: 'Svelte • 우리 모두를 위한 웹 개발',
+			description: '우리 모두를 위한 웹 개발',
+			hero_title: '우리 모두를 위한 웹 개발',
+			get_started: '시작하기',
+			docs_href: '/ko/docs',
+			hero_alt: '컴포넌트 코드를 포장하는 Svelte 컴파일러',
+			pronunciation_alt: 'Svelte 발음 안내',
+			definition: '매력적으로 날씬하고, 우아하며, 세련된',
+			blurb:
+				'Svelte는 컴파일러를 사용하는 UI 프레임워크입니다. 이미 알고 있는 HTML, CSS, JavaScript로, 브라우저에서 최소한의 일만 하는 놀랍도록 간결한 컴포넌트를 작성할 수 있습니다. <strong>웹 개발에 보내는 러브레터입니다.</strong>',
+			blurb_2:
+				'저희 말만 믿지 마세요. 개발자들은 꾸준히 Svelte를 가장 써 보고 싶은 프레임워크로 꼽습니다.',
+			companies: '여러분이 아는 기업들이 씁니다',
+			documentary: 'Svelte Origins 다큐멘터리 전체 보기',
+			community_title: '친절한 커뮤니티에 함께하세요',
+			community:
+				'자매 단체인 <a href="https://www.sveltesociety.dev/">Svelte Society</a>가 전 세계에서 행사를 엽니다. 가까운 지역 모임을 찾아보고, <a href="/chat">Discord 서버</a>에서 함께하세요.',
+			photos_alt: '2022년 스톡홀름 Svelte Summit 사진 (촬영: Marcel Cutts)',
+			photos_by: '사진: <a href="https://marcel.gg/">Marcel Cutts</a>',
+			supporters:
+				'<a href="https://vercel.com" target="_blank" rel="noreferrer">Vercel</a>과 수많은 후원자가 지원하고, 전업·비전업 메인테이너들이 개발합니다. Svelte는 앞으로도 계속됩니다.',
+			footer:
+				'Svelte는 MIT 라이선스로 배포되는 <a href="https://github.com/sveltejs/svelte">무료 오픈 소스 소프트웨어</a>입니다.'
+		},
+		tutorial: {
+			menu: '메뉴',
+			reset: '초기화',
+			solve: '정답 보기',
+			previous_exercise: '이전 연습 문제',
+			next_exercise: '다음 연습 문제',
+			toggle_vim: 'Vim 모드 전환',
+			copy_disabled_title: '지금은 복사·붙여넣기를 할 수 없습니다!',
+			copy_disabled_body:
+				'코드를 에디터에 직접 입력하며 연습 문제를 풀어 보세요. 그래야 더 오래 기억하고 더 잘 이해할 수 있습니다.',
+			copy_enable: '이번 세션 동안 복사·붙여넣기 허용하기',
+			ok: '확인'
 		}
 	}
 };
