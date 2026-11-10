@@ -12,3 +12,4 @@ Svelte 공식 문서의 한국어 번역입니다.
   예: `## 에디터 도구 <!-- Editor tooling -->`
   빠뜨리면 dev 서버와 빌드가 어떤 파일의 어떤 id가 다른지 에러로 알려 줍니다.
 - 줄 구조는 영어 원문과 맞춥니다(원문이 바뀌었을 때 diff로 비교하기 쉽도록). 그래서 `translations/*/docs`는 Prettier 대상에서 뺐습니다.
+- 번역 규칙과 용어집은 [GUIDE.md](./GUIDE.md)에 있습니다. 번역한 뒤에는 `node scripts/check-translations.ts <파일>`로 원문과 구조가 맞는지 검사하세요(코드 블록, 제목 id, HTML, 링크, frontmatter).
