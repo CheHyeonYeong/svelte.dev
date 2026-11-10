@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { get_ui } from '#lib/i18n.ts';
 	import { afterNavigate, beforeNavigate } from '$app/navigation';
 	import { SplitPane } from '@rich_harris/svelte-split-pane';
 	import * as adapter from './adapter.svelte';
@@ -16,6 +17,8 @@
 	import Controls from './Controls.svelte';
 	import Editor from '@sveltejs/repl/editor';
 	import type { Snapshot, PageProps } from './$types.js';
+
+	const ui = get_ui();
 
 	let { data }: PageProps = $props();
 
@@ -235,9 +238,9 @@
 </script>
 
 <svelte:head>
-	<title>{data.exercise.chapter.title} / {data.exercise.title} • Svelte Tutorial</title>
+	<title>{data.exercise.chapter.title} / {data.exercise.title} • {ui.tutorial_title}</title>
 
-	<meta name="twitter:title" content="{data.exercise.title} • Svelte Tutorial" />
+	<meta name="twitter:title" content="{data.exercise.title} • {ui.tutorial_title}" />
 	<meta name="twitter:card" content="summary" />
 	<meta name="twitter:site" content="@sveltejs" />
 	<meta name="twitter:creator" content="@sveltejs" />
@@ -245,7 +248,7 @@
 	<meta property="twitter:domain" content="https://svelte.dev" />
 	<meta property="twitter:url" content="https://svelte.dev/tutorial" />
 
-	<meta property="og:title" content="{data.exercise.title} • Svelte Tutorial" />
+	<meta property="og:title" content="{data.exercise.title} • {ui.tutorial_title}" />
 	<meta property="og:url" content="https://svelte.dev/tutorial" />
 	<meta property="og:type" content="website" />
 	<meta property="og:image" content="https://svelte.dev/images/twitter-thumbnail.jpg" />

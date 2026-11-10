@@ -5,6 +5,7 @@
 	import type { Exercise, PartStub } from '#lib/tutorial/index.d.ts';
 	import { Checkbox, Icon, Toolbox } from '@sveltejs/site-kit/components';
 	import type { Workspace } from '@sveltejs/repl/workspace';
+	import { get_locale, get_ui } from '#lib/i18n.ts';
 
 	interface Props {
 		index: PartStub[];
@@ -15,10 +16,17 @@
 	}
 
 	let { index, exercise, completed, toggle, workspace }: Props = $props();
+
+	const t = get_ui().tutorial;
+
+	// `/tutorial` or `/<locale>/tutorial`
+	const base = $derived(
+		`${get_locale(page.url.pathname) ? `/${get_locale(page.url.pathname)}` : ''}/tutorial`
+	);
 </script>
 
 <SecondaryNav>
-	<ModalDropdown label="Menu">
+	<ModalDropdown label={t.menu}>
 		<div class="secondary-nav-dropdown">
 			{#each index as part}
 				<details>
@@ -32,10 +40,10 @@
 								{#each chapter.exercises as exercise}
 									<li value={exercise.slug}>
 										<a
-											aria-current={page.url.pathname === `/tutorial/${exercise.slug}`
+											aria-current={page.url.pathname === `${base}/${exercise.slug}`
 												? 'page'
 												: undefined}
-											href="/tutorial/{exercise.slug}">{exercise.title}</a
+											href="{base}/{exercise.slug}">{exercise.title}</a
 										>
 									</li>
 								{/each}
@@ -48,14 +56,14 @@
 	</ModalDropdown>
 
 	<a
-		href={exercise.prev ? `/tutorial/${exercise.prev?.slug}` : undefined}
-		aria-label={exercise.prev && 'Previous exercise'}
+		href={exercise.prev ? `${base}/${exercise.prev?.slug}` : undefined}
+		aria-label={exercise.prev && t.previous_exercise}
 	>
 		<Icon name="arrow-left" size={18} />
 	</a>
 	<a
-		href={exercise.next ? `/tutorial/${exercise.next?.slug}` : undefined}
-		aria-label={exercise.next && 'Next exercise'}
+		href={exercise.next ? `${base}/${exercise.next?.slug}` : undefined}
+		aria-label={exercise.next && t.next_exercise}
 	>
 		<Icon name="arrow-right" size={18} />
 	</a>
@@ -68,15 +76,15 @@
 
 	<button class="raised" class:completed disabled={!exercise.has_solution} onclick={toggle}>
 		{#if completed && exercise.has_solution}
-			reset
+			{t.reset}
 		{:else}
-			solve
+			{t.solve}
 		{/if}
 	</button>
 
 	<Toolbox>
 		<label class="option">
-			<span>Toggle Vim mode</span>
+			<span>{t.toggle_vim}</span>
 			<Checkbox bind:checked={workspace.vim}></Checkbox>
 		</label>
 	</Toolbox>

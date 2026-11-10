@@ -50,7 +50,8 @@ test('preserves existing Vercel configuration and generates unique rules within 
 
 	expect(config.git).toEqual({ deploymentEnabled: { next: false } });
 
-	const canonical_headers = config.headers!.slice(2);
+	// the first headers are the cross-origin isolation rules (workers, `/tutorial/kit`, `/<locale>/tutorial/kit`)
+	const canonical_headers = config.headers!.slice(3);
 	expect(canonical_headers.length).toBeGreaterThan(0);
 	expect(config.headers!.length).toBeLessThanOrEqual(2048);
 	expect(new Set(canonical_headers.map((header) => header.source)).size).toBe(

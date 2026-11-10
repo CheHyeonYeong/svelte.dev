@@ -1,22 +1,19 @@
 <script>
 	import { Section } from '@sveltejs/site-kit/components';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
 </script>
 
 <Section --max-width="200rem">
-	<h2>join our friendly community</h2>
+	<h2>{t.community_title}</h2>
 	<p>
-		Our sister organisation, <a href="https://www.sveltesociety.dev/">Svelte Society</a>, organises
-		events around the globe. Find your chapter and join us in
-		<a href="/chat">our Discord server</a>.
+		{@html t.community}
 	</p>
 
 	<figure>
-		<enhanced:img
-			class="collage"
-			src="./summit.png?w=800;1200;2000;2800;4400"
-			alt="Photos by Marcel Cutts from the 2022 Svelte Summit in Stockholm"
-		/>
-		<figcaption>Photos by <a href="https://marcel.gg/">Marcel Cutts</a></figcaption>
+		<enhanced:img class="collage" src="./summit.png?w=800;1200;2000;2800;4400" alt={t.photos_alt} />
+		<figcaption>{@html t.photos_by}</figcaption>
 	</figure>
 </Section>
 
@@ -34,7 +31,8 @@
 		color: var(--sk-fg-3);
 		text-align: center;
 
-		a {
+		/* the link is rendered from a UI string with {@html} */
+		:global(a) {
 			text-wrap: nowrap;
 			color: inherit;
 			text-decoration: underline;

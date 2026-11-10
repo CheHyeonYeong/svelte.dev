@@ -1,34 +1,47 @@
 <!-- @component
-Links a docs page to the same page in the other languages. Only rendered on docs pages,
-since those are the only pages that have translations.
+Links a page to the same page in the other languages. Only rendered on pages that have
+localized routes (docs and tutorial).
 -->
 <script lang="ts">
 	import { page } from '$app/state';
 	import { get_locale, locales, strip_locale, ui } from '#lib/i18n.ts';
 
-	const DOCS_PAGE = '/docs/[topic]/[...path=documentation]';
+	// routes that exist both as `/...` and `/[locale=locale]/...`
+	const LOCALIZED_ROUTES = [
+		'/',
+		'/docs',
+		'/docs/[topic]/[...path=documentation]',
+		'/tutorial/[...slug]'
+	];
 
 	const locale = $derived(get_locale(page.url.pathname));
 	const english = $derived(strip_locale(page.url.pathname));
-	const is_docs_page = $derived(
-		page.route.id === DOCS_PAGE || page.route.id === `/[locale=locale]${DOCS_PAGE}`
+	const is_localized = $derived(
+		LOCALIZED_ROUTES.some(
+			(id) =>
+				page.route.id === id || page.route.id === `/[locale=locale]${id === '/' ? '' : id}`
+		)
 	);
 
 	const alternatives = $derived([
 		{ lang: 'en', name: ui.en.name, href: english },
-		...locales.map((l) => ({ lang: ui[l].lang, name: ui[l].name, href: `/${l}${english}` }))
+		...locales.map((l) => ({
+			lang: ui[l].lang,
+			name: ui[l].name,
+			href: english === '/' ? `/${l}` : `/${l}${english}`
+		}))
 	]);
 </script>
 
 <svelte:head>
-	{#if is_docs_page && page.status === 200}
+	{#if is_localized && page.status === 200}
 		{#each alternatives as { lang, href }}
 			<link rel="alternate" hreflang={lang} href="https://svelte.dev{href}" />
 		{/each}
 	{/if}
 </svelte:head>
 
-{#if is_docs_page && page.status === 200}
+{#if is_localized && page.status === 200}
 	<div class="locale-switch">
 		{#each alternatives as { lang, name, href }}
 			{#if lang !== (locale ? ui[locale].lang : 'en')}

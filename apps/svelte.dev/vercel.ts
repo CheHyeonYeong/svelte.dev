@@ -1,6 +1,7 @@
 import { existsSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { routes, type VercelConfig, type HeaderRule } from '@vercel/config/v1';
+import { locales } from './src/lib/locales.ts';
 
 const domain = 'https://svelte.dev';
 const project_directory = existsSync(join(process.cwd(), 'content', 'docs'))
@@ -49,6 +50,11 @@ export const config: VercelConfig = {
 			{ key: 'cross-origin-resource-policy', value: 'cross-origin' }
 		]),
 		routes.header('/tutorial/kit/(.*)', [
+			{ key: 'cross-origin-opener-policy', value: 'same-origin' },
+			{ key: 'cross-origin-embedder-policy', value: 'require-corp' },
+			{ key: 'cross-origin-resource-policy', value: 'cross-origin' }
+		]),
+		routes.header(`/(${locales.join('|')})/tutorial/kit/(.*)`, [
 			{ key: 'cross-origin-opener-policy', value: 'same-origin' },
 			{ key: 'cross-origin-embedder-policy', value: 'require-corp' },
 			{ key: 'cross-origin-resource-policy', value: 'cross-origin' }

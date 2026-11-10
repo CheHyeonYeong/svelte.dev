@@ -6,16 +6,20 @@ import { nav_links } from './nav.ts';
 import { locales, ui, type Locale } from '#lib/i18n.ts';
 
 /**
- * Translated docs live in `apps/svelte.dev/translations/<locale>/docs/...` and mirror
- * the structure of `apps/svelte.dev/content/docs/...`. They are deliberately kept outside
- * of `content/` so that they never end up in the English index.
+ * Translated docs and tutorial text live in `apps/svelte.dev/translations/<locale>/{docs,tutorial}/...`
+ * and mirror the structure of `apps/svelte.dev/content/...`. They are deliberately kept outside
+ * of `content/` so that they never end up in the English index. Tutorial exercise files (`+assets`)
+ * are not translated, only the `index.md` text.
  */
-const documents = import.meta.glob<string>('./*/docs/**/*.md', {
-	eager: true,
-	query: '?url',
-	import: 'default',
-	base: '../../../translations'
-});
+const documents = import.meta.glob<string>(
+	['./*/docs/**/*.md', './*/tutorial/**/index.md', '!**/+assets/**'],
+	{
+		eager: true,
+		query: '?url',
+		import: 'default',
+		base: '../../../translations'
+	}
+);
 
 // Translations are usually partial (a page may be translated while its parent `index.md` is not),
 // and `create_index` expects complete trees, so each file is indexed on its own. We only need
@@ -79,12 +83,23 @@ for (const locale of locales) {
 	}
 }
 
-function find(locale: Locale, document: Document) {
+/** The translation of an English document, if there is one */
+export function find(locale: Locale, document: Document): Document | undefined {
 	return translations[locale][slug_of(document.file)];
 }
 
-function title_of(locale: Locale, document: Document) {
+/** The translated title of an English document, falling back to the English title */
+export function title_of(locale: Locale, document: Document) {
 	return find(locale, document)?.metadata.title ?? document.metadata.title;
+}
+
+/** Titles of the parent documents of a file, e.g. Docs • Svelte • Introduction */
+function breadcrumbs_of(locale: Locale, file: string) {
+	const parts = slug_of(file).split('/');
+	return parts.slice(0, -1).map((_, i) => {
+		const parent = index[parts.slice(0, i + 1).join('/')];
+		return { title: parent ? title_of(locale, parent) : '' };
+	});
 }
 
 function localize_summary(locale: Locale, document: Document): DocumentSummary {
@@ -120,16 +135,9 @@ export function get_localized_page(locale: Locale, slug: string) {
 		};
 	};
 
-	// breadcrumbs are the titles of the parent documents, e.g. Docs • Svelte • Introduction
-	const parts = slug_of(page.file).split('/');
-	const breadcrumbs = parts.slice(0, -1).map((_, i) => {
-		const parent = index[parts.slice(0, i + 1).join('/')];
-		return { title: parent ? title_of(locale, parent) : '' };
-	});
-
 	const document: Document = {
 		...page,
-		breadcrumbs,
+		breadcrumbs: breadcrumbs_of(locale, page.file),
 		prev: link(page.prev),
 		next: link(page.next),
 		...(translation && {
@@ -154,12 +162,48 @@ export function get_localized_pages(locale: Locale) {
 	});
 }
 
-/** The top navigation, with translated labels and the docs menu pointing to `/<locale>/docs/...` */
+/** Tutorial exercises with translated titles/text and locale-prefixed slugs, for the search index */
+export function get_localized_tutorial_pages(locale: Locale, pages: Document[]): Document[] {
+	return pages.map((page) => {
+		const translation = find(locale, page);
+		return {
+			...page,
+			slug: `${locale}/${page.slug}`,
+			breadcrumbs: breadcrumbs_of(locale, page.file),
+			...(translation && {
+				metadata: { ...page.metadata, title: translation.metadata.title },
+				body: translation.body,
+				sections: translation.sections
+			})
+		};
+	});
+}
+
+/** The top navigation, with translated labels and the docs and tutorial menus pointing to `/<locale>/...` */
 export function get_localized_nav_links(locale: Locale): NavigationLink[] {
 	const labels = ui[locale].nav;
 
 	return nav_links.map((link) => {
 		const title = labels[link.slug as keyof typeof labels] ?? link.title;
+
+		if (link.slug === 'tutorial') {
+			return {
+				...link,
+				title,
+				slug: `${locale}/tutorial`,
+				sections: index.tutorial.children.map((part, i) => ({
+					title: title_of(locale, part),
+					sections: part.children.map((chapter, j) => ({
+						title: title_of(locale, chapter),
+						sections: chapter.children.map((exercise, k) => ({
+							title: title_of(locale, exercise),
+							path: `/${locale}${link.sections![i].sections![j].sections![k].path}`
+						}))
+					}))
+				}))
+			};
+		}
+
 		if (link.slug !== 'docs') return { ...link, title };
 
 		return {
@@ -182,4 +226,26 @@ export function get_localized_nav_links(locale: Locale): NavigationLink[] {
 			})
 		};
 	});
+}
+
+/**
+ * Points absolute links in rendered HTML (`href="/docs/..."`, `href="/tutorial/..."`) to the
+ * localized pages, so readers stay in their language. Links to pages that only exist in English
+ * (e.g. `/docs/llms`, `/docs/kit/modules`) are left alone.
+ */
+export function localize_links(html: string, locale: Locale) {
+	return html.replace(
+		/href="\/((?:docs|tutorial)(?:\/[^"#?]*)?)([#?][^"]*)?"/g,
+		(match, path: string, suffix = '') => {
+			path = path.replace(/\/$/, '');
+
+			const localized =
+				path === 'docs' ||
+				path in docs.pages ||
+				path in docs.topics ||
+				/^tutorial(\/(svelte|kit)(\/[\w-]+)?)?$/.test(path);
+
+			return localized ? `href="/${locale}/${path}${suffix}"` : match;
+		}
+	);
 }

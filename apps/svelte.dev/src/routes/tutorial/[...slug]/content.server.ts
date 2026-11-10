@@ -5,6 +5,8 @@ import { error } from '@sveltejs/kit';
 import { text_files } from './shared';
 import type { Document } from '@sveltejs/site-kit';
 import { render_content } from '#lib/server/renderer.ts';
+import { find, localize_links, title_of } from '#lib/server/i18n.ts';
+import type { Locale } from '#lib/i18n.ts';
 
 const lookup: Record<
 	string,
@@ -92,12 +94,44 @@ async function get(assets: Record<string, string>, key: string) {
 		: Buffer.from(await response.arrayBuffer()).toString('base64');
 }
 
-export async function load_exercise(slug: string): Promise<Exercise> {
+/** The tutorial index with translated titles, for `/<locale>/tutorial/...` */
+export function get_localized_parts(locale: Locale): PartStub[] {
+	return parts.map((part, i) => {
+		const part_document = index.tutorial.children[i];
+		return {
+			...part,
+			title: title_of(locale, part_document),
+			chapters: part.chapters.map((chapter, j) => ({
+				...chapter,
+				title: title_of(locale, part_document.children[j]),
+				exercises: chapter.exercises.map((exercise) => ({
+					...exercise,
+					title: title_of(locale, lookup[exercise.slug].exercise)
+				}))
+			}))
+		};
+	});
+}
+
+/**
+ * Loads an exercise. With a `locale`, the text and titles are translated where a translation
+ * exists (the exercise files stay the same).
+ */
+export async function load_exercise(slug: string, locale?: Locale): Promise<Exercise> {
 	if (!(slug in lookup)) {
 		error(404, 'No such tutorial found');
 	}
 
-	const { part, chapter, exercise, assets, prev, next } = lookup[slug];
+	const original = lookup[slug];
+	const { part, chapter, assets } = original;
+	const translation = locale ? find(locale, original.exercise) : undefined;
+	const exercise = translation
+		? { ...original.exercise, metadata: original.exercise.metadata, body: translation.body }
+		: original.exercise;
+	const localize = (stub: ExerciseStub | null) =>
+		stub && locale ? { ...stub, title: title_of(locale, lookup[stub.slug].exercise) } : stub;
+	const prev = localize(original.prev);
+	const next = localize(original.next);
 
 	const metadata = {
 		...part.metadata,
@@ -139,23 +173,27 @@ export async function load_exercise(slug: string): Promise<Exercise> {
 	return {
 		part: {
 			slug: part.slug,
-			title: part.metadata.title,
+			title: locale ? title_of(locale, part) : part.metadata.title,
 			label: part.metadata.label
 		},
 		chapter: {
 			slug: chapter.slug,
-			title: chapter.metadata.title
+			title: locale ? title_of(locale, chapter) : chapter.metadata.title
 		},
 		scope,
 		focus,
-		title: exercise.metadata.title,
+		title: translation?.metadata.title ?? exercise.metadata.title,
 		path: (metadata.path as string) ?? '/',
 		slug: exercise.slug,
 		prev,
 		next,
 		markdown: exercise.body,
-		html: (
-			await render_content(exercise.file, exercise.body, { check: false, references })
+		html: (locale
+			? localize_links(
+					await render_content(exercise.file, exercise.body, { check: false, references }),
+					locale
+				)
+			: await render_content(exercise.file, exercise.body, { check: false, references })
 		).replace(/<code>(.+?)<\/code>/g, (match, filename) => {
 			// TODO wire this up
 			return filenames.size > 1 && filenames.has(filename)
@@ -169,6 +207,7 @@ export async function load_exercise(slug: string): Promise<Exercise> {
 		},
 		a,
 		b,
-		has_solution: Object.keys(b).length > 0
+		has_solution: Object.keys(b).length > 0,
+		translation_file: translation?.file
 	};
 }

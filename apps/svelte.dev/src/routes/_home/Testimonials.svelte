@@ -1,26 +1,30 @@
+<script>
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
+</script>
+
 <div class="outer">
 	<p class="definition">
 		<enhanced:img
 			class="pronunciation"
-			alt="Svelte pronunciation guide"
+			alt={t.pronunciation_alt}
 			src="./svelte-pronunciation.svg"
 		/>
 
 		<span class="description">
-			<span class="adjective"></span> attractively thin, graceful and stylish
+			<span class="adjective"></span>
+			{t.definition}
 		</span>
 	</p>
 
 	<div class="blurb">
 		<p>
-			Svelte is a UI framework that uses a compiler to let you write breathtakingly concise
-			components that do minimal work in the browser, using languages you already know — HTML, CSS
-			and JavaScript. <strong>It’s a love letter to web development.</strong>
+			{@html t.blurb}
 		</p>
 
 		<p>
-			But don’t take our word for it. Developers consistently rank Svelte as the framework they’re
-			most excited about using.
+			{t.blurb_2}
 		</p>
 	</div>
 

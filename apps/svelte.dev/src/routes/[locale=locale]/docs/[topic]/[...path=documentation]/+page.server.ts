@@ -1,5 +1,5 @@
 import { docs, get_related_links } from '#lib/server/content.ts';
-import { get_localized_page } from '#lib/server/i18n.ts';
+import { get_localized_page, localize_links } from '#lib/server/i18n.ts';
 import { render_content } from '#lib/server/renderer.ts';
 import { locales } from '#lib/i18n.ts';
 import { error } from '@sveltejs/kit';
@@ -30,11 +30,14 @@ export async function load({ url, params }) {
 	return {
 		document: {
 			...document,
-			body: await render_content(document.file, document.body, {
-				origin: url.origin,
-				references,
-				referenceModule: referenceModules[document.file]
-			})
+			body: localize_links(
+				await render_content(document.file, document.body, {
+					origin: url.origin,
+					references,
+					referenceModule: referenceModules[document.file]
+				}),
+				params.locale
+			)
 		},
 		locale: params.locale,
 		translated: !!translation_file,

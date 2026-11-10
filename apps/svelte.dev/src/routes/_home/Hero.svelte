@@ -4,12 +4,15 @@
 	import MachineDesktop from './svelte-machine-desktop.png?w=1200;2000;2800;4400&format=avif;webp;png&as=picture';
 	// @ts-expect-error
 	import MachineMobile from './svelte-machine-mobile.png?w=960&format=avif;webp;png&as=picture';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
 </script>
 
 <div class="hero">
 	<div class="hero-content">
-		<h1>web development for the rest of us</h1>
-		<a href="/docs" class="cta">get started <Icon name="arrow-right" /></a>
+		<h1>{t.hero_title}</h1>
+		<a href={t.docs_href} class="cta">{t.get_started} <Icon name="arrow-right" /></a>
 	</div>
 
 	<picture class="machine">
@@ -37,11 +40,7 @@
 		<source srcset={MachineMobile.sources.avif} width="2208" height="936" type="image/avif" />
 		<source srcset={MachineMobile.sources.webp} width="2208" height="936" type="image/webp" />
 		<source srcset={MachineMobile.sources.png} width="2208" height="936" type="image/png" />
-		<img
-			alt="The Svelte compiler packaging up your component code"
-			src={MachineMobile.img.src}
-			fetchpriority="high"
-		/>
+		<img alt={t.hero_alt} src={MachineMobile.img.src} fetchpriority="high" />
 	</picture>
 </div>
 

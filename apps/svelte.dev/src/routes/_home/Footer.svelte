@@ -1,12 +1,13 @@
 <script lang="ts">
 	import { Section } from '@sveltejs/site-kit/components';
+	import { get_ui } from '#lib/i18n.ts';
+
+	const t = get_ui().home;
 </script>
 
 <Section>
 	<p class="copyright">
-		© {new Date().getFullYear()} Svelte contributors. Svelte is
-		<a href="https://github.com/sveltejs/svelte">free and open source software</a> released under the
-		MIT license.
+		© {new Date().getFullYear()} Svelte contributors. {@html t.footer}
 	</p>
 </Section>
 

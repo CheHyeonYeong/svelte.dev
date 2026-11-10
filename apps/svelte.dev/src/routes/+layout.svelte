@@ -9,6 +9,7 @@
 	import { inject } from '@vercel/analytics';
 	import { beforeNavigate } from '$app/navigation';
 	import { get_locale, ui } from '#lib/i18n.ts';
+	import { is_kit_tutorial } from '#lib/locales.ts';
 	import LocaleSwitch from '#lib/components/LocaleSwitch.svelte';
 
 	if (!dev) {
@@ -23,9 +24,7 @@
 	beforeNavigate(({ from, to, cancel }) => {
 		if (!from || !to) return;
 
-		if (
-			from.url.pathname.startsWith('/tutorial/kit/') !== to.url.pathname.startsWith('/tutorial/kit')
-		) {
+		if (is_kit_tutorial(from.url.pathname) !== is_kit_tutorial(to.url.pathname)) {
 			cancel();
 			location.href = to.url.href;
 		}
