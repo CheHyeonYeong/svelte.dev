@@ -1,0 +1,29 @@
+---
+title: style 지시어
+tags: template-style
+---
+
+`class`처럼 인라인 `style` 속성도 그대로 작성할 수 있습니다. Svelte는 사실 약간의 기능을 더한 HTML일 뿐이기 때문입니다:
+
+```svelte
+/// file: App.svelte
+<button
+	class="card"
+	+++style="transform: {flipped ? 'rotateY(0)' : ''}; --bg-1: palegoldenrod; --bg-2: black; --bg-3: goldenrod"+++
+	onclick={() => flipped = !flipped}
+>
+```
+
+스타일이 많아지면 조금 지저분해 보일 수 있습니다. `style:` 지시어를 사용하면 깔끔하게 정리할 수 있습니다:
+
+```svelte
+/// file: App.svelte
+<button
+	class="card"
++++	style:transform={flipped ? 'rotateY(0)' : ''}
+	style:--bg-1="palegoldenrod"
+	style:--bg-2="black"
+	style:--bg-3="goldenrod"+++
+	onclick={() => flipped = !flipped}
+>
+```
